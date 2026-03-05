@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>클래스 보이스 - 수업 피드백</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f13;
+    --surface: #1a1a22;
+    --surface-hover: #22222e;
+    --card: #1e1e28;
+    --card-hover: #252533;
+    --border: #2a2a38;
+    --accent: #6c5ce7;
+    --accent-light: #a29bfe;
+    --green: #00b894;
+    --green-dim: rgba(0,206,201,0.13);
+    --orange: #fdcb6e;
+    --orange-dim: rgba(253,203,110,0.13);
+    --red: #e17055;
+    --red-dim: rgba(225,112,85,0.13);
+    --text: #e8e6e3;
+    --text-sec: #8b8b9e;
+    --text-muted: #5a5a72;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::-webkit-scrollbar { width:6px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:#333; border-radius:3px; }
+
+  @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes slideIn { from { opacity:0; transform:translateX(-20px); } to { opacity:1; transform:translateX(0); } }
+  @keyframes countUp { from { opacity:0; transform:scale(0.8); } to { opacity:1; transform:scale(1); } }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+  .fade-up { animation: fadeUp 0.4s ease-out both; }
+  .slide-in { animation: slideIn 0.3s ease-out both; }
+  .count-up { animation: countUp 0.3s ease-out both; }
+
+  /* ── Layout ── */
+  .app { max-width: 560px; margin: 0 auto; padding: 0 16px 100px; }
+  .center-screen {
+    min-height: 100vh; display: flex; align-items: center;
+    justify-content: center; flex-direction: column; gap: 28px; padding: 24px;
+  }
+
+  /* ── Buttons ── */
+  button {
+    cursor: pointer; border: none; background: transparent; color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif; display: inline-flex;
+    align-items: center; justify-content: center; gap: 6px;
+    transition: all 0.15s;
+  }
+
+  /* ── Header ── */
+  .header {
+    position: sticky; top: 0; z-index: 10; background: var(--bg);
+    padding: 16px 0 12px; border-bottom: 1px solid var(--border);
+  }
+  .header-row { display: flex; align-items: center; justify-content: space-between; }
+
+  /* ── Inputs ── */
+  input, textarea {
+    width: 100%; padding: 10px 14px; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--bg);
+    color: var(--text); font-size: 14px; outline: none;
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+  textarea { resize: vertical; line-height: 1.7; }
+
+  /* ── Cards ── */
+  .panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 20px;
+  }
+  .post-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 18px; margin-bottom: 8px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .post-card:hover { background: var(--card-hover); }
+  .post-card.unread {
+    background: var(--surface); border-color: rgba(108,92,231,0.2);
+    border-left: 3px solid var(--accent);
+  }
+
+  /* ── Tags ── */
+  .tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 5px 12px; border-radius: 20px; font-size: 13px;
+    border: 1px solid var(--border); cursor: pointer;
+  }
+  .tag.active { font-weight: 600; }
+
+  /* ── Teacher Tabs ── */
+  .tabs {
+    display: flex; gap: 4px; background: var(--surface);
+    border-radius: 10px; padding: 3px;
+  }
+  .tab-btn {
+    flex: 1; padding: 10px 0; border-radius: 8px; font-size: 13px;
+    font-weight: 400; color: var(--text-sec);
+  }
+  .tab-btn.active {
+    background: var(--accent); color: #fff; font-weight: 700;
+  }
+
+  /* ── Dashboard ── */
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px; margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 18px; text-align: center;
+  }
+  .stat-number {
+    font-size: 28px; font-weight: 900;
+    font-family: 'Space Mono', monospace;
+  }
+  .bar-track { height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease-out; }
+
+  /* ── Reply Box ── */
+  .reply-box {
+    margin-top: 10px; padding: 10px 12px;
+    background: rgba(108,92,231,0.07); border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0; font-size: 13px;
+    color: var(--accent-light); line-height: 1.6;
+  }
+
+  /* ── Action Btns ── */
+  .action-btn {
+    padding: 4px 10px; border-radius: 6px; font-size: 12px; gap: 4px;
+  }
+
+  /* ── Role Cards ── */
+  .role-card {
+    width: 200px; height: 180px; flex-direction: column; gap: 16px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px;
+  }
+  .role-card:hover { background: var(--surface-hover); }
+
+  /* ── Student rank row ── */
+  .rank-row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 12px; border-radius: 10px; margin-bottom: 6px;
+  }
+  .rank-row.top { background: rgba(108,92,231,0.05); border: 1px solid rgba(108,92,231,0.13); }
+
+  /* ── Visibility ── */
+  .hidden { display: none !important; }
+
+  /* Mobile tweaks */
+  @media (max-width: 480px) {
+    .role-card { width: 160px; height: 150px; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════ ROLE SELECT ═══════════════════════ -->
+<div id="page-role" class="center-screen">
+  <div class="fade-up" style="text-align:center; margin-bottom:8px;">
+    <div style="font-size:48px; margin-bottom:12px;">📚</div>
+    <h1 style="font-size:28px; font-weight:900; letter-spacing:-0.02em;
+      background:linear-gradient(135deg,#a29bfe,#6c5ce7);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;">
+      클래스 보이스
+    </h1>
+    <p style="color:var(--text-sec); margin-top:8px; font-size:14px; line-height:1.6;">
+      수업 후 질문 · 건의 · 피드백을 남겨주세요
+    </p>
+  </div>
+  <div style="display:flex; gap:16px; flex-wrap:wrap; justify-content:center;">
+    <button class="role-card fade-up" style="animation-delay:0.1s" onclick="goStudent()">
+      <div style="font-size:40px">🎒</div>
+      <div><div style="font-weight:700; font-size:16px; margin-bottom:4px;">학생</div>
+      <div style="font-size:12px; color:var(--text-sec)">의견 남기기</div></div>
+    </button>
+    <button class="role-card fade-up" style="animation-delay:0.2s" onclick="showPwBox()">
+      <div style="font-size:40px">👨‍🏫</div>
+      <div><div style="font-weight:700; font-size:16px; margin-bottom:4px;">선생님</div>
+      <div style="font-size:12px; color:var(--text-sec)">대시보드 보기</div></div>
+    </button>
+  </div>
+  <div id="pw-box" class="hidden fade-up" style="background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; padding:24px; width:100%; max-width:320px;">
+    <div style="font-size:13px; color:var(--text-sec); margin-bottom:12px;">비밀번호를 입력하세요</div>
+    <div style="display:flex; gap:8px;">
+      <input type="password" id="pw-input" placeholder="비밀번호" onkeydown="if(event.key==='Enter')checkPw()"
+        style="font-family:'Space Mono',monospace; text-align:center;">
+      <button onclick="checkPw()" style="padding:10px 20px; border-radius:8px; background:var(--accent); color:#fff; font-weight:600; font-size:13px;">확인</button>
+    </div>
+    <div style="font-size:11px; color:var(--text-muted); margin-top:8px;">기본 비밀번호: 1234</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ STUDENT NAME ═══════════════════════ -->
+<div id="page-name" class="center-screen hidden">
+  <div class="fade-up panel" style="width:100%; max-width:380px; text-align:center; padding:32px;">
+    <div style="font-size:36px; margin-bottom:12px;">✏️</div>
+    <h2 style="font-size:20px; font-weight:700; margin-bottom:4px;">이름을 알려주세요</h2>
+    <p style="font-size:13px; color:var(--text-sec); margin-bottom:24px;">선생님만 확인할 수 있어요</p>
+    <input id="name-input" placeholder="이름 또는 닉네임" style="text-align:center; margin-bottom:16px; font-size:15px; padding:12px 16px;"
+      onkeydown="if(event.key==='Enter')confirmName()">
+    <div style="display:flex; gap:8px;">
+      <button onclick="showPage('page-role')" style="flex:1; padding:10px; border-radius:10px; background:var(--card); color:var(--text-sec); font-size:14px;">뒤로</button>
+      <button onclick="confirmName()" style="flex:2; padding:10px; border-radius:10px; background:var(--accent); color:#fff; font-weight:600; font-size:14px;">시작하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ STUDENT COMPOSE ═══════════════════════ -->
+<div id="page-student" class="hidden">
+  <div class="app">
+    <div class="header">
+      <div class="header-row">
+        <button onclick="showPage('page-role')" style="color:var(--text-sec); font-size:13px;">← 나가기</button>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div id="student-avatar" style="width:28px; height:28px; border-radius:50%; background:var(--accent);
+            display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;"></div>
+          <span id="student-name-display" style="font-size:14px; font-weight:600;"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel fade-up" style="margin-top:20px;">
+      <div style="font-size:15px; font-weight:700; margin-bottom:16px;">💬 의견 남기기</div>
+
+      <!-- Categories -->
+      <div id="cat-buttons" style="display:flex; gap:6px; margin-bottom:14px; flex-wrap:wrap;"></div>
+
+      <textarea id="post-text" rows="4" placeholder="수업 중 이해가 안 됐던 부분이나 건의사항을 자유롭게 적어주세요..."></textarea>
+
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-top:14px;">
+        <button id="visibility-btn" onclick="toggleVisibility()" style="gap:6px; font-size:13px; padding:6px 12px; border-radius:8px;"></button>
+        <button id="send-btn" onclick="submitPost()" style="gap:8px; padding:10px 22px; border-radius:10px; background:var(--accent); color:#fff; font-weight:600; font-size:14px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          보내기
+        </button>
+      </div>
+    </div>
+
+    <!-- Public posts -->
+    <div id="public-posts" style="margin-top:32px;"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ TEACHER VIEW ═══════════════════════ -->
+<div id="page-teacher" class="hidden">
+  <div class="app">
+    <div class="header">
+      <div class="header-row" style="margin-bottom:12px;">
+        <button onclick="showPage('page-role')" style="color:var(--text-sec); font-size:13px;">← 나가기</button>
+        <div style="font-size:16px; font-weight:800;">👨‍🏫 선생님 모드</div>
+        <div style="width:60px"></div>
+      </div>
+      <div class="tabs">
+        <button class="tab-btn active" id="tab-feed" onclick="switchTab('feed')">
+          💬 피드 <span id="unread-badge" style="background:var(--red); color:#fff; font-size:10px; font-weight:700;
+            padding:1px 6px; border-radius:10px; margin-left:4px;"></span>
+        </button>
+        <button class="tab-btn" id="tab-dash" onclick="switchTab('dashboard')">📊 대시보드</button>
+      </div>
+    </div>
+
+    <!-- Feed -->
+    <div id="section-feed" style="margin-top:16px;">
+      <input id="search-input" placeholder="🔍 이름 또는 내용으로 검색..." oninput="renderFeed()"
+        style="background:var(--surface); margin-bottom:10px;">
+      <div id="filter-buttons" style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:8px;"></div>
+      <div style="display:flex; gap:8px; margin-bottom:12px;">
+        <button onclick="markAllRead()" style="font-size:11px; color:var(--accent-light); padding:4px 10px; border-radius:6px; background:rgba(108,92,231,0.07);">모두 읽음 처리</button>
+        <button onclick="clearAll()" style="font-size:11px; color:var(--red); padding:4px 10px; border-radius:6px; background:var(--red-dim);">전체 삭제</button>
+      </div>
+      <div id="feed-list"></div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="section-dashboard" class="hidden" style="margin-top:20px;">
+      <div id="stats-cards" class="stats-grid"></div>
+      <div id="category-chart" class="panel" style="margin-bottom:16px;"></div>
+      <div id="student-ranking" class="panel"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════ DATA ═══════════════════════
+const TEACHER_PW = '1234';
+const STORAGE_KEY = 'classvoice_posts';
+
+const CATEGORIES = [
+  { value:'question', label:'질문', emoji:'❓', color:'#6c5ce7' },
+  { value:'suggestion', label:'건의', emoji:'💡', color:'#fdcb6e' },
+  { value:'feedback', label:'피드백', emoji:'📝', color:'#00b894' },
+  { value:'other', label:'기타', emoji:'💬', color:'#8b8b9e' },
+];
+
+let posts = [];
+let studentName = '';
+let selectedCat = 'question';
+let isPublic = false;
+let currentFilter = 'all';
+let currentCatFilter = 'all';
+let currentTab = 'feed';
+let replyingTo = null;
+
+function loadPosts() {
+  try { posts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { posts = []; }
+}
+function savePosts() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+}
+function getCat(v) { return CATEGORIES.find(c => c.value === v) || CATEGORIES[3]; }
+function formatTime(ts) {
+  const d = new Date(ts);
+  return `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+// ═══════════════════════ NAVIGATION ═══════════════════════
+function showPage(id) {
+  ['page-role','page-name','page-student','page-teacher'].forEach(p => {
+    document.getElementById(p).classList.toggle('hidden', p !== id);
+  });
+  if (id === 'page-teacher') { loadPosts(); renderFeed(); renderDashboard(); }
+  if (id === 'page-student') { loadPosts(); renderPublicPosts(); }
+}
+
+function goStudent() { showPage('page-name'); setTimeout(() => document.getElementById('name-input').focus(), 100); }
+function showPwBox() {
+  document.getElementById('pw-box').classList.remove('hidden');
+  setTimeout(() => document.getElementById('pw-input').focus(), 100);
+}
+function checkPw() {
+  if (document.getElementById('pw-input').value === TEACHER_PW) {
+    document.getElementById('pw-input').value = '';
+    showPage('page-teacher');
+  }
+}
+function confirmName() {
+  const v = document.getElementById('name-input').value.trim();
+  if (!v) return;
+  studentName = v;
+  document.getElementById('student-avatar').textContent = v[0];
+  document.getElementById('student-name-display').textContent = v;
+  showPage('page-student');
+  initStudentUI();
+}
+
+// ═══════════════════════ STUDENT UI ═══════════════════════
+function initStudentUI() {
+  // Category buttons
+  const wrap = document.getElementById('cat-buttons');
+  wrap.innerHTML = '';
+  CATEGORIES.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'tag' + (selectedCat === cat.value ? ' active' : '');
+    btn.style.color = selectedCat === cat.value ? cat.color : 'var(--text-sec)';
+    btn.style.background = selectedCat === cat.value ? cat.color + '22' : 'transparent';
+    btn.style.borderColor = selectedCat === cat.value ? cat.color + '44' : 'var(--border)';
+    btn.style.fontWeight = selectedCat === cat.value ? '600' : '400';
+    btn.textContent = cat.emoji + ' ' + cat.label;
+    btn.onclick = () => { selectedCat = cat.value; initStudentUI(); };
+    wrap.appendChild(btn);
+  });
+  updateVisibilityBtn();
+}
+
+function toggleVisibility() { isPublic = !isPublic; updateVisibilityBtn(); }
+function updateVisibilityBtn() {
+  const btn = document.getElementById('visibility-btn');
+  if (isPublic) {
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg> 공개`;
+    btn.style.color = '#00b894';
+    btn.style.background = 'var(--green-dim)';
+  } else {
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> 비공개`;
+    btn.style.color = '#e17055';
+    btn.style.background = 'var(--red-dim)';
+  }
+}
+
+function submitPost() {
+  const text = document.getElementById('post-text').value.trim();
+  if (!text) return;
+  loadPosts();
+  posts.unshift({
+    id: Date.now().toString(),
+    name: studentName,
+    text,
+    isPublic,
+    category: selectedCat,
+    timestamp: Date.now(),
+    read: false,
+    starred: false,
+    reply: '',
+  });
+  savePosts();
+  document.getElementById('post-text').value = '';
+
+  // Flash send button
+  const btn = document.getElementById('send-btn');
+  btn.innerHTML = '✅ 전송됨!';
+  btn.style.background = '#00b894';
+  setTimeout(() => {
+    btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> 보내기`;
+    btn.style.background = 'var(--accent)';
+  }, 2000);
+  renderPublicPosts();
+}
+
+function renderPublicPosts() {
+  const wrap = document.getElementById('public-posts');
+  const pub = posts.filter(p => p.isPublic);
+  if (!pub.length) { wrap.innerHTML = ''; return; }
+  let html = `<div style="font-size:14px; font-weight:600; color:var(--text-sec); margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+    공개된 의견 (${pub.length})</div>`;
+  pub.forEach((p, i) => {
+    const cat = getCat(p.category);
+    html += `<div class="post-card fade-up" style="animation-delay:${i*0.05}s; cursor:default;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span style="font-size:12px; color:${cat.color}; font-weight:600;">${cat.emoji} ${cat.label}</span>
+        <span style="font-size:11px; color:var(--text-muted); font-family:'Space Mono',monospace;">${formatTime(p.timestamp)}</span>
+      </div>
+      <div style="font-size:14px; line-height:1.7; white-space:pre-wrap;">${escHtml(p.text)}</div>
+      ${p.reply ? `<div class="reply-box" style="margin-top:10px;">
+        <span style="font-weight:600; font-size:11px;">👨‍🏫 선생님 답변</span>
+        <div style="margin-top:4px;">${escHtml(p.reply)}</div>
+      </div>` : ''}
+    </div>`;
+  });
+  wrap.innerHTML = html;
+}
+
+// ═══════════════════════ TEACHER UI ═══════════════════════
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('tab-feed').className = 'tab-btn' + (tab==='feed'?' active':'');
+  document.getElementById('tab-dash').className = 'tab-btn' + (tab==='dashboard'?' active':'');
+  document.getElementById('section-feed').classList.toggle('hidden', tab!=='feed');
+  document.getElementById('section-dashboard').classList.toggle('hidden', tab!=='dashboard');
+  if (tab==='dashboard') renderDashboard();
+}
+
+function renderFeed() {
+  const search = (document.getElementById('search-input')?.value || '').toLowerCase();
+  let filtered = [...posts];
+  if (currentFilter === 'unread') filtered = filtered.filter(p => !p.read);
+  if (currentFilter === 'starred') filtered = filtered.filter(p => p.starred);
+  if (currentCatFilter !== 'all') filtered = filtered.filter(p => p.category === currentCatFilter);
+  if (search) filtered = filtered.filter(p => p.text.toLowerCase().includes(search) || p.name.toLowerCase().includes(search));
+
+  const unread = posts.filter(p => !p.read).length;
+  const badge = document.getElementById('unread-badge');
+  badge.textContent = unread > 0 ? unread : '';
+  badge.style.display = unread > 0 ? 'inline' : 'none';
+
+  // Filters
+  const fb = document.getElementById('filter-buttons');
+  const filters = [
+    { id:'all', label:'전체' },
+    { id:'unread', label:`안 읽음 (${unread})` },
+    { id:'starred', label:'⭐ 중요' },
+  ];
+  let fhtml = '';
+  filters.forEach(f => {
+    const active = currentFilter === f.id;
+    fhtml += `<button onclick="currentFilter='${f.id}'; renderFeed()" class="tag${active?' active':''}"
+      style="font-size:12px; padding:5px 12px; border-radius:8px;
+      color:${active?'var(--accent-light)':'var(--text-sec)'};
+      background:${active?'rgba(108,92,231,0.13)':'transparent'};
+      border-color:${active?'rgba(108,92,231,0.26)':'transparent'};">${f.label}</button>`;
+  });
+  fhtml += `<div style="width:1px; height:16px; background:var(--border); margin:0 4px;"></div>`;
+  [{v:'all',l:'전체'}, ...CATEGORIES.map(c=>({v:c.value,l:c.emoji}))].forEach(c => {
+    const active = currentCatFilter === c.v;
+    fhtml += `<button onclick="currentCatFilter='${c.v}'; renderFeed()"
+      style="padding:5px 10px; border-radius:8px; font-size:12px; border:none;
+      background:${active?'var(--surface)':'transparent'};
+      color:${active?'var(--text)':'var(--text-muted)'};">${c.l}</button>`;
+  });
+  fb.innerHTML = fhtml;
+
+  // Posts
+  const list = document.getElementById('feed-list');
+  if (!filtered.length) {
+    list.innerHTML = `<div style="text-align:center; padding:60px 0; color:var(--text-muted);">
+      <div style="font-size:40px; margin-bottom:12px;">📭</div>
+      <div style="font-size:14px;">아직 의견이 없습니다</div></div>`;
+    return;
+  }
+
+  let html = '';
+  filtered.forEach((p, i) => {
+    const cat = getCat(p.category);
+    html += `<div class="post-card fade-up ${p.read?'':'unread'}" style="animation-delay:${i*0.03}s"
+      onclick="markRead('${p.id}')">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="width:30px; height:30px; border-radius:50%;
+            background:linear-gradient(135deg, ${cat.color}44, ${cat.color}22);
+            display:flex; align-items:center; justify-content:center;
+            font-size:13px; font-weight:700; color:${cat.color};">${escHtml(p.name[0])}</div>
+          <div>
+            <div style="font-size:14px; font-weight:600;">${escHtml(p.name)}</div>
+            <div style="display:flex; gap:8px; align-items:center; margin-top:2px;">
+              <span style="font-size:11px; color:${cat.color};">${cat.emoji} ${cat.label}</span>
+              <span style="font-size:10px; padding:1px 7px; border-radius:4px;
+                background:${p.isPublic?'var(--green-dim)':'var(--red-dim)'};
+                color:${p.isPublic?'#00b894':'#e17055'};">${p.isPublic?'공개':'비공개'}</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:4px;">
+          ${!p.read ? '<div style="width:7px; height:7px; border-radius:50%; background:var(--accent); margin-right:6px;"></div>' : ''}
+          <span style="font-size:11px; color:var(--text-muted); font-family:'Space Mono',monospace;">${formatTime(p.timestamp)}</span>
+        </div>
+      </div>
+      <div style="font-size:14px; line-height:1.8; white-space:pre-wrap; margin-bottom:12px;">${escHtml(p.text)}</div>
+      ${p.reply ? `<div class="reply-box" style="margin-bottom:10px;">
+        <span style="font-weight:600; font-size:11px;">✅ 내 답변</span>
+        <div style="margin-top:4px;">${escHtml(p.reply)}</div></div>` : ''}
+      <div style="display:flex; gap:6px;" onclick="event.stopPropagation()">
+        <button class="action-btn" onclick="toggleStar('${p.id}')"
+          style="color:${p.starred?'var(--orange)':'var(--text-muted)'}; background:${p.starred?'var(--orange-dim)':'transparent'};">
+          ⭐ ${p.starred?'중요':'표시'}
+        </button>
+        <button class="action-btn" onclick="startReply('${p.id}')"
+          style="color:var(--accent-light); background:rgba(108,92,231,0.07);">↩ 답변</button>
+        <button class="action-btn" onclick="deletePost('${p.id}')"
+          style="color:var(--red); background:var(--red-dim);">🗑 삭제</button>
+      </div>
+      <div id="reply-area-${p.id}" class="hidden" onclick="event.stopPropagation()" style="margin-top:12px; display:flex; gap:8px;">
+        <input id="reply-input-${p.id}" placeholder="답변을 입력하세요..."
+          onkeydown="if(event.key==='Enter')sendReply('${p.id}')"
+          style="flex:1; padding:8px 12px; border-radius:8px; font-size:13px;">
+        <button onclick="sendReply('${p.id}')" style="padding:8px 16px; border-radius:8px; background:var(--accent); color:#fff; font-size:13px; font-weight:600;">전송</button>
+      </div>
+    </div>`;
+  });
+  list.innerHTML = html;
+
+  // If replying, show area
+  if (replyingTo) {
+    const area = document.getElementById('reply-area-' + replyingTo);
+    if (area) {
+      area.classList.remove('hidden');
+      area.style.display = 'flex';
+      const inp = document.getElementById('reply-input-' + replyingTo);
+      const p = posts.find(x => x.id === replyingTo);
+      if (inp && p) inp.value = p.reply || '';
+      setTimeout(() => inp?.focus(), 50);
+    }
+  }
+}
+
+function markRead(id) {
+  const p = posts.find(x => x.id === id);
+  if (p && !p.read) { p.read = true; savePosts(); renderFeed(); }
+}
+function toggleStar(id) {
+  const p = posts.find(x => x.id === id);
+  if (p) { p.starred = !p.starred; savePosts(); renderFeed(); }
+}
+function deletePost(id) {
+  posts = posts.filter(x => x.id !== id);
+  savePosts(); renderFeed(); renderDashboard();
+}
+function markAllRead() {
+  posts.forEach(p => p.read = true);
+  savePosts(); renderFeed();
+}
+function clearAll() {
+  if (posts.length && confirm('정말 전체 삭제하시겠습니까?')) {
+    posts = []; savePosts(); renderFeed(); renderDashboard();
+  }
+}
+function startReply(id) {
+  replyingTo = replyingTo === id ? null : id;
+  renderFeed();
+}
+function sendReply(id) {
+  const inp = document.getElementById('reply-input-' + id);
+  if (!inp || !inp.value.trim()) return;
+  const p = posts.find(x => x.id === id);
+  if (p) { p.reply = inp.value.trim(); savePosts(); replyingTo = null; renderFeed(); }
+}
+
+// ═══════════════════════ DASHBOARD ═══════════════════════
+function renderDashboard() {
+  const unread = posts.filter(p => !p.read).length;
+  const students = {};
+  posts.forEach(p => {
+    if (!students[p.name]) students[p.name] = { total:0, question:0, suggestion:0, feedback:0, other:0, last:0 };
+    students[p.name].total++;
+    students[p.name][p.category]++;
+    students[p.name].last = Math.max(students[p.name].last, p.timestamp);
+  });
+  const sorted = Object.entries(students).sort((a,b) => b[1].total - a[1].total);
+  const totalByCat = { question:0, suggestion:0, feedback:0, other:0 };
+  posts.forEach(p => totalByCat[p.category]++);
+
+  // Stats cards
+  const stats = [
+    { label:'총 의견', value:posts.length, color:'#6c5ce7', emoji:'📊' },
+    { label:'안 읽음', value:unread, color:'#e17055', emoji:'🔴' },
+    { label:'참여 학생', value:Object.keys(students).length, color:'#00b894', emoji:'👥' },
+    { label:'공개 글', value:posts.filter(p=>p.isPublic).length, color:'#fdcb6e', emoji:'🌐' },
+  ];
+  document.getElementById('stats-cards').innerHTML = stats.map((s,i) => `
+    <div class="stat-card count-up" style="animation-delay:${i*0.08}s;">
+      <div style="font-size:24px; margin-bottom:6px;">${s.emoji}</div>
+      <div class="stat-number" style="color:${s.color};">${s.value}</div>
+      <div style="font-size:12px; color:var(--text-sec); margin-top:4px;">${s.label}</div>
+    </div>`).join('');
+
+  // Category chart
+  let catHtml = `<div style="font-size:15px; font-weight:700; margin-bottom:16px;">📈 유형별 분포</div>`;
+  CATEGORIES.forEach(cat => {
+    const count = totalByCat[cat.value];
+    const pct = posts.length ? (count/posts.length)*100 : 0;
+    catHtml += `<div style="margin-bottom:12px;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+        <span style="font-size:13px;">${cat.emoji} ${cat.label}</span>
+        <span style="font-size:13px; color:${cat.color}; font-weight:700; font-family:'Space Mono',monospace;">${count}건 (${Math.round(pct)}%)</span>
+      </div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%; background:${cat.color};"></div></div>
+    </div>`;
+  });
+  document.getElementById('category-chart').innerHTML = catHtml;
+
+  // Ranking
+  let rhtml = `<div style="font-size:15px; font-weight:700; margin-bottom:16px;">🏆 학생별 참여 현황</div>`;
+  if (!sorted.length) {
+    rhtml += `<div style="text-align:center; padding:30px; color:var(--text-muted); font-size:14px;">아직 데이터가 없습니다</div>`;
+  }
+  sorted.forEach(([name, st], i) => {
+    const colors = ['#6c5ce7','#00b89433','#fdcb6e33','var(--card)'];
+    const textColors = ['#fff','#00b894','#fdcb6e','var(--text-sec)'];
+    rhtml += `<div class="rank-row slide-in ${i===0?'top':''}" style="animation-delay:${i*0.06}s;">
+      <div style="width:28px; height:28px; border-radius:50%; font-size:13px; font-weight:900;
+        display:flex; align-items:center; justify-content:center;
+        background:${colors[Math.min(i,3)]}; color:${textColors[Math.min(i,3)]};
+        font-family:'Space Mono',monospace;">${i+1}</div>
+      <div style="width:34px; height:34px; border-radius:50%;
+        background:linear-gradient(135deg, #6c5ce733, #00b89433);
+        display:flex; align-items:center; justify-content:center;
+        font-weight:700; font-size:14px; color:var(--accent-light);">${escHtml(name[0])}</div>
+      <div style="flex:1;">
+        <div style="font-size:14px; font-weight:600;">${escHtml(name)}</div>
+        <div style="display:flex; gap:8px; margin-top:3px;">
+          ${CATEGORIES.map(c => st[c.value] ? `<span style="font-size:11px; color:${c.color};">${c.emoji}${st[c.value]}</span>` : '').join('')}
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:22px; font-weight:900; font-family:'Space Mono',monospace;">${st.total}</div>
+        <div style="font-size:10px; color:var(--text-muted);">총 의견</div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('student-ranking').innerHTML = rhtml;
+}
+
+// ═══════════════════════ UTILS ═══════════════════════
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// Init
+loadPosts();
+</script>
+</body>
+</html>
