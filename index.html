@@ -55,6 +55,7 @@
   .student-row:hover{background:var(--card-hover)}
   .ig{margin-bottom:14px}.ig label{display:block;font-size:12px;color:var(--text-sec);margin-bottom:6px;font-weight:500}
   .ig-row{display:flex;gap:10px}.ig-row .ig{flex:1}
+  .ig .hint{font-size:11px;color:var(--text-muted);margin-top:4px}
   .info-box{background:rgba(108,92,231,0.07);border:1px solid rgba(108,92,231,0.2);border-radius:10px;padding:12px 16px;font-size:13px;color:var(--accent-light);line-height:1.6;margin-bottom:16px}
   .profile-detail{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
   .profile-field{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
@@ -78,34 +79,49 @@
     <div style="margin-top:12px;font-size:11px;color:var(--text-muted);"><span class="conn-dot" id="conn-dot"></span><span id="conn-text">연결 중...</span></div>
   </div>
   <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;">
-    <button class="role-card fade-up" style="animation-delay:.1s" onclick="showPage('page-login')">
+    <button class="role-card fade-up" style="animation-delay:.1s" onclick="showPage('page-student-login')">
       <div style="font-size:40px">🎒</div><div><div style="font-weight:700;font-size:16px;margin-bottom:4px;">학생</div><div style="font-size:12px;color:var(--text-sec)">의견 남기기</div></div>
     </button>
-    <button class="role-card fade-up" style="animation-delay:.2s" onclick="showPwBox()">
-      <div style="font-size:40px">👨‍🏫</div><div><div style="font-weight:700;font-size:16px;margin-bottom:4px;">선생님</div><div style="font-size:12px;color:var(--text-sec)">대시보드 보기</div></div>
+    <button class="role-card fade-up" style="animation-delay:.2s" onclick="showPage('page-prof-login')">
+      <div style="font-size:40px">👨‍🏫</div><div><div style="font-weight:700;font-size:16px;margin-bottom:4px;">교수</div><div style="font-size:12px;color:var(--text-sec)">대시보드 보기</div></div>
     </button>
   </div>
-  <div id="pw-box" class="hidden fade-up" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;width:100%;max-width:320px;">
-    <div style="font-size:13px;color:var(--text-sec);margin-bottom:12px;">선생님 비밀번호를 입력하세요</div>
-    <div style="display:flex;gap:8px;">
-      <input type="password" id="pw-input" placeholder="비밀번호" onkeydown="if(event.key==='Enter')checkPw()" style="font-family:'Space Mono',monospace;text-align:center;">
-      <button onclick="checkPw()" style="padding:10px 20px;border-radius:8px;background:var(--accent);color:#fff;font-weight:600;font-size:13px;">확인</button>
+</div>
+
+<!-- ═══════ PROFESSOR LOGIN ═══════ -->
+<div id="page-prof-login" class="center-screen hidden">
+  <div class="fade-up panel" style="width:100%;max-width:380px;padding:32px;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:36px;margin-bottom:12px;">👨‍🏫</div>
+      <h2 style="font-size:20px;font-weight:700;margin-bottom:4px;">교수 로그인</h2>
+      <p style="font-size:13px;color:var(--text-sec);line-height:1.6;">처음이면 자동으로 계정이 만들어집니다</p>
     </div>
-    <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">기본 비밀번호: 1234</div>
+    <div class="info-box">💡 <strong>처음 방문</strong>: 아이디와 비밀번호 입력 → 자동 등록!<br>🔑 <strong>재방문</strong>: 등록한 아이디/비밀번호로 로그인<br>📌 <strong>아이디</strong>는 학생들에게 수업코드로 공유됩니다</div>
+    <div class="ig"><label>아이디 (수업코드)</label><input id="prof-id" placeholder="예: prof_kim" onkeydown="if(event.key==='Enter')document.getElementById('prof-pw').focus()">
+      <div class="hint">영문, 숫자, _ 사용 가능</div></div>
+    <div class="ig"><label>비밀번호</label><input type="password" id="prof-pw" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')profLogin()">
+      <div class="hint">8자리 이상</div></div>
+    <div id="prof-login-error" style="font-size:12px;color:var(--red);margin-bottom:12px;display:none;"></div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="showPage('page-role')" style="flex:1;padding:10px;border-radius:10px;background:var(--card);color:var(--text-sec);font-size:14px;">뒤로</button>
+      <button onclick="profLogin()" style="flex:2;padding:10px;border-radius:10px;background:var(--accent);color:#fff;font-weight:600;font-size:14px;">로그인 / 등록</button>
+    </div>
   </div>
 </div>
 
 <!-- ═══════ STUDENT LOGIN ═══════ -->
-<div id="page-login" class="center-screen hidden">
+<div id="page-student-login" class="center-screen hidden">
   <div class="fade-up panel" style="width:100%;max-width:380px;padding:32px;">
     <div style="text-align:center;margin-bottom:20px;">
       <div style="font-size:36px;margin-bottom:12px;">🔐</div>
       <h2 style="font-size:20px;font-weight:700;margin-bottom:4px;">학생 로그인</h2>
       <p style="font-size:13px;color:var(--text-sec);line-height:1.6;">처음이면 프로필을 작성하게 됩니다</p>
     </div>
-    <div class="info-box">💡 <strong>처음 방문</strong>: 이름 입력 → 프로필 작성 → 자동 가입!<br>🔑 <strong>재방문</strong>: 이름 + 비밀번호로 바로 로그인</div>
+    <div class="info-box">💡 <strong>처음 방문</strong>: 수업코드 + 이름 + 비밀번호 → 프로필 작성 → 자동 가입!<br>🔑 <strong>재방문</strong>: 같은 정보로 바로 로그인</div>
+    <div class="ig"><label>수업코드 (교수 아이디)</label><input id="login-code" placeholder="교수님이 알려준 수업코드" onkeydown="if(event.key==='Enter')document.getElementById('login-name').focus()"></div>
     <div class="ig"><label>이름 (실명)</label><input id="login-name" placeholder="예: 홍길동" onkeydown="if(event.key==='Enter')document.getElementById('login-pw').focus()"></div>
-    <div class="ig"><label>비밀번호 (4자리 이상)</label><input type="password" id="login-pw" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')studentLogin()"></div>
+    <div class="ig"><label>비밀번호</label><input type="password" id="login-pw" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')studentLogin()">
+      <div class="hint">6자리 이상</div></div>
     <div id="login-error" style="font-size:12px;color:var(--red);margin-bottom:12px;display:none;"></div>
     <div style="display:flex;gap:8px;">
       <button onclick="showPage('page-role')" style="flex:1;padding:10px;border-radius:10px;background:var(--card);color:var(--text-sec);font-size:14px;">뒤로</button>
@@ -114,13 +130,13 @@
   </div>
 </div>
 
-<!-- ═══════ STUDENT REGISTER (Profile Form) ═══════ -->
+<!-- ═══════ STUDENT REGISTER (Profile) ═══════ -->
 <div id="page-register" class="center-screen hidden">
   <div class="fade-up panel" style="width:100%;max-width:460px;padding:28px;">
     <div style="text-align:center;margin-bottom:20px;">
       <div style="font-size:36px;margin-bottom:8px;">📋</div>
       <h2 style="font-size:20px;font-weight:700;margin-bottom:4px;">프로필 작성</h2>
-      <p style="font-size:13px;color:var(--text-sec);">기본 정보를 입력해주세요 (선생님만 볼 수 있어요)</p>
+      <p style="font-size:13px;color:var(--text-sec);">기본 정보를 입력해주세요 (교수님만 볼 수 있어요)</p>
     </div>
     <div class="ig"><label>📛 이름</label><input id="reg-name" readonly style="color:var(--accent-light);background:var(--card);"></div>
     <div class="ig-row">
@@ -144,7 +160,7 @@
       <textarea id="reg-bio" rows="5" placeholder="자유롭게 자기소개를 작성해주세요.&#10;예: 관심 분야, 수업에서 기대하는 점, 목표 등" style="min-height:120px;"></textarea>
     </div>
     <div style="display:flex;gap:8px;margin-top:4px;">
-      <button onclick="showPage('page-login')" style="flex:1;padding:12px;border-radius:10px;background:var(--card);color:var(--text-sec);font-size:14px;">뒤로</button>
+      <button onclick="showPage('page-student-login')" style="flex:1;padding:12px;border-radius:10px;background:var(--card);color:var(--text-sec);font-size:14px;">뒤로</button>
       <button onclick="completeRegistration()" style="flex:2;padding:12px;border-radius:10px;background:var(--accent);color:#fff;font-weight:600;font-size:14px;">가입 완료 🎉</button>
     </div>
   </div>
@@ -180,10 +196,11 @@
   <div class="app">
     <div class="header">
       <div class="header-row" style="margin-bottom:12px;">
-        <button onclick="showPage('page-role')" style="color:var(--text-sec);font-size:13px;">← 나가기</button>
-        <div style="font-size:16px;font-weight:800;display:flex;align-items:center;gap:8px;"><span class="conn-dot" id="conn-dot-t"></span> 👨‍🏫 선생님 모드</div>
+        <button onclick="profLogout()" style="color:var(--text-sec);font-size:13px;">← 나가기</button>
+        <div style="font-size:16px;font-weight:800;display:flex;align-items:center;gap:8px;"><span class="conn-dot" id="conn-dot-t"></span> 👨‍🏫 교수 모드</div>
         <div style="width:60px"></div>
       </div>
+      <div style="text-align:center;margin-bottom:10px;font-size:12px;color:var(--text-muted);">수업코드: <span id="prof-id-display" style="color:var(--accent-light);font-weight:700;font-family:'Space Mono',monospace;"></span></div>
       <div class="tabs">
         <button class="tab-btn active" id="tab-feed" onclick="switchTab('feed')">💬 피드 <span id="unread-badge" style="background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;margin-left:4px;"></span></button>
         <button class="tab-btn" id="tab-dash" onclick="switchTab('dashboard')">📊 통계</button>
@@ -223,7 +240,7 @@
   </div>
 </div>
 
-<!-- ═══════ STUDENT PROFILE MODAL ═══════ -->
+<!-- ═══════ PROFILE MODAL ═══════ -->
 <div id="profile-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeProfileModal()">
   <div class="modal fade-up">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
@@ -248,8 +265,9 @@ firebase.initializeApp({
   messagingSenderId:"62347734220",
   appId:"1:62347734220:web:731353d78edf4758376669"
 });
-const db=firebase.database(),postsRef=db.ref('posts'),studentsRef=db.ref('students');
+const db=firebase.database();
 
+// ═══════ CONNECTION ═══════
 let isOnline=false;
 db.ref('.info/connected').on('value',s=>{
   isOnline=!!s.val();
@@ -257,7 +275,7 @@ db.ref('.info/connected').on('value',s=>{
   const t=document.getElementById('conn-text');if(t)t.textContent=isOnline?'실시간 연결됨':'연결 끊김';
 });
 
-const TEACHER_PW='1234';
+// ═══════ STATE ═══════
 const CATS=[
   {value:'question',label:'질문',emoji:'❓',color:'#6c5ce7'},
   {value:'suggestion',label:'건의',emoji:'💡',color:'#fdcb6e'},
@@ -266,63 +284,138 @@ const CATS=[
 ];
 let posts=[],studentAccounts={},studentName='',selectedCat='question',isPublic=false;
 let currentFilter='all',currentCatFilter='all',currentTab='feed',replyingTo=null,currentPage='page-role';
-let pendingName='',pendingPw='';
+let pendingName='',pendingPw='',pendingCode='';
+let currentProfId='';  // currently logged-in professor's ID
+let postsRef=null, studentsRef=null; // dynamic refs per professor
+let postsListener=null, studentsListener=null;
 
 function getCat(v){return CATS.find(c=>c.value===v)||CATS[3]}
 function fmt(ts){if(!ts)return'';const d=new Date(ts);return`${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`}
 function toast(m,e){const t=document.createElement('div');t.className='toast'+(e?' error':'');t.textContent=m;document.getElementById('toast-container').appendChild(t);setTimeout(()=>t.remove(),2500)}
 function esc(s){if(!s)return'';const d=document.createElement('div');d.textContent=s;return d.innerHTML}
 
-// ═══════ REALTIME SYNC ═══════
-postsRef.on('value',snap=>{
-  const d=snap.val();
-  posts=d?Object.keys(d).map(k=>({...d[k],_key:k})).sort((a,b)=>b.timestamp-a.timestamp):[];
-  if(currentPage==='page-student')renderPublicPosts();
-  if(currentPage==='page-teacher'){renderFeed();renderDashboard()}
-});
-studentsRef.on('value',snap=>{
-  studentAccounts=snap.val()||{};
-  if(currentPage==='page-teacher')renderStudentList();
-});
+// ═══════ DYNAMIC DB BINDING ═══════
+function bindClassroom(profId){
+  // Unbind previous
+  if(postsListener&&postsRef){postsRef.off('value',postsListener);postsListener=null}
+  if(studentsListener&&studentsRef){studentsRef.off('value',studentsListener);studentsListener=null}
+  posts=[];studentAccounts={};
+
+  currentProfId=profId;
+  postsRef=db.ref('classrooms/'+profId+'/posts');
+  studentsRef=db.ref('classrooms/'+profId+'/students');
+
+  postsListener=postsRef.on('value',snap=>{
+    const d=snap.val();
+    posts=d?Object.keys(d).map(k=>({...d[k],_key:k})).sort((a,b)=>b.timestamp-a.timestamp):[];
+    if(currentPage==='page-student')renderPublicPosts();
+    if(currentPage==='page-teacher'){renderFeed();renderDashboard()}
+  });
+  studentsListener=studentsRef.on('value',snap=>{
+    studentAccounts=snap.val()||{};
+    if(currentPage==='page-teacher')renderStudentList();
+  });
+}
 
 // ═══════ NAVIGATION ═══════
 function showPage(id){
   currentPage=id;
-  ['page-role','page-login','page-register','page-student','page-teacher'].forEach(p=>document.getElementById(p).classList.toggle('hidden',p!==id));
-  if(id==='page-login'){document.getElementById('login-error').style.display='none';setTimeout(()=>document.getElementById('login-name').focus(),100)}
+  ['page-role','page-prof-login','page-student-login','page-register','page-student','page-teacher'].forEach(p=>document.getElementById(p).classList.toggle('hidden',p!==id));
+  if(id==='page-prof-login'){document.getElementById('prof-login-error').style.display='none';setTimeout(()=>document.getElementById('prof-id').focus(),100)}
+  if(id==='page-student-login'){document.getElementById('login-error').style.display='none';setTimeout(()=>document.getElementById('login-code').focus(),100)}
   if(id==='page-teacher'){renderFeed();renderDashboard();renderStudentList()}
 }
-function showPwBox(){document.getElementById('pw-box').classList.remove('hidden');setTimeout(()=>document.getElementById('pw-input').focus(),100)}
-function checkPw(){if(document.getElementById('pw-input').value===TEACHER_PW){document.getElementById('pw-input').value='';showPage('page-teacher')}}
+
+// ═══════ PROFESSOR AUTH ═══════
+function profLogin(){
+  const id=document.getElementById('prof-id').value.trim().toLowerCase();
+  const pw=document.getElementById('prof-pw').value;
+  const err=document.getElementById('prof-login-error');
+  err.style.display='none';
+
+  if(!id||!pw){err.textContent='아이디와 비밀번호를 모두 입력해주세요.';err.style.display='block';return}
+  if(!/^[a-zA-Z0-9_]+$/.test(id)){err.textContent='아이디는 영문, 숫자, _만 사용 가능합니다.';err.style.display='block';return}
+  if(pw.length<8){err.textContent='비밀번호는 8자리 이상이어야 합니다.';err.style.display='block';return}
+
+  db.ref('professors/'+id).once('value').then(snap=>{
+    const data=snap.val();
+    if(data){
+      // Existing professor
+      if(data.password===pw){
+        enterProf(id);
+      } else {
+        err.textContent='비밀번호가 틀렸습니다.';err.style.display='block';
+      }
+    } else {
+      // New professor → auto register
+      db.ref('professors/'+id).set({password:pw,joinedAt:Date.now()}).then(()=>{
+        toast('🎉 교수 계정이 만들어졌습니다!');
+        enterProf(id);
+      }).catch(()=>{err.textContent='등록에 실패했습니다.';err.style.display='block'});
+    }
+  });
+}
+
+function enterProf(id){
+  document.getElementById('prof-id').value='';
+  document.getElementById('prof-pw').value='';
+  document.getElementById('prof-id-display').textContent=id;
+  bindClassroom(id);
+  showPage('page-teacher');
+}
+
+function profLogout(){
+  currentProfId='';
+  if(postsListener&&postsRef){postsRef.off('value',postsListener);postsListener=null}
+  if(studentsListener&&studentsRef){studentsRef.off('value',studentsListener);studentsListener=null}
+  posts=[];studentAccounts={};
+  showPage('page-role');
+}
 
 // ═══════ STUDENT AUTH ═══════
 function studentLogin(){
+  const code=document.getElementById('login-code').value.trim().toLowerCase();
   const name=document.getElementById('login-name').value.trim();
-  const pw=document.getElementById('login-pw').value.trim();
+  const pw=document.getElementById('login-pw').value;
   const err=document.getElementById('login-error');
   err.style.display='none';
-  if(!name||!pw){err.textContent='이름과 비밀번호를 모두 입력해주세요.';err.style.display='block';return}
-  if(pw.length<4){err.textContent='비밀번호는 4자리 이상이어야 합니다.';err.style.display='block';return}
 
-  const existing=Object.entries(studentAccounts).find(([k,s])=>s.name===name);
-  if(existing){
-    if(existing[1].password===pw){enterStudent(name)}
-    else{err.textContent='비밀번호가 틀렸습니다. 처음 가입 시 설정한 비밀번호를 입력해주세요.';err.style.display='block'}
-  } else {
-    // New user → go to profile form
-    pendingName=name;pendingPw=pw;
-    document.getElementById('reg-name').value=name;
-    document.getElementById('reg-sid').value='';
-    document.getElementById('reg-grade').value='';
-    document.getElementById('reg-dept').value='';
-    document.getElementById('reg-course').value='';
-    document.getElementById('reg-section').value='';
-    document.getElementById('reg-gpa').value='';
-    document.getElementById('reg-eng').value='';
-    document.getElementById('reg-bio').value='';
-    showPage('page-register');
-    setTimeout(()=>document.getElementById('reg-sid').focus(),100);
-  }
+  if(!code||!name||!pw){err.textContent='모든 항목을 입력해주세요.';err.style.display='block';return}
+  if(pw.length<6){err.textContent='비밀번호는 6자리 이상이어야 합니다.';err.style.display='block';return}
+
+  // Check professor exists
+  db.ref('professors/'+code).once('value').then(snap=>{
+    if(!snap.val()){
+      err.textContent='존재하지 않는 수업코드입니다. 교수님에게 확인해주세요.';err.style.display='block';return;
+    }
+
+    // Bind to this classroom
+    bindClassroom(code);
+
+    // Check if student name exists in this classroom
+    db.ref('classrooms/'+code+'/students').orderByChild('name').equalTo(name).once('value').then(sSnap=>{
+      const sData=sSnap.val();
+      if(sData){
+        // Existing student → check pw
+        const entry=Object.values(sData)[0];
+        if(entry.password===pw){
+          enterStudent(name,code);
+        } else {
+          err.textContent='비밀번호가 틀렸습니다. 처음 가입 시 설정한 비밀번호를 입력해주세요.';err.style.display='block';
+        }
+      } else {
+        // New student → go to profile
+        pendingName=name;pendingPw=pw;pendingCode=code;
+        document.getElementById('reg-name').value=name;
+        ['reg-sid','reg-dept','reg-course','reg-gpa','reg-eng'].forEach(x=>document.getElementById(x).value='');
+        document.getElementById('reg-grade').value='';
+        document.getElementById('reg-section').value='';
+        document.getElementById('reg-bio').value='';
+        showPage('page-register');
+        setTimeout(()=>document.getElementById('reg-sid').focus(),100);
+      }
+    });
+  });
 }
 
 function completeRegistration(){
@@ -338,43 +431,39 @@ function completeRegistration(){
   if(!sid){toast('학번을 입력해주세요.',true);return}
   if(!grade){toast('학년을 선택해주세요.',true);return}
 
-  const profile={
-    name:pendingName,
-    password:pendingPw,
-    studentId:sid,
-    grade:grade,
-    department:dept||'',
-    course:course||'',
-    section:section||'',
-    gpa:gpa||'',
-    englishScore:eng||'',
-    bio:bio||'',
-    joinedAt:Date.now()
-  };
+  const profile={name:pendingName,password:pendingPw,studentId:sid,grade,department:dept||'',course:course||'',section:section||'',gpa:gpa||'',englishScore:eng||'',bio:bio||'',joinedAt:Date.now()};
 
-  studentsRef.push(profile).then(()=>{
+  db.ref('classrooms/'+pendingCode+'/students').push(profile).then(()=>{
+    document.getElementById('login-code').value='';
     document.getElementById('login-name').value='';
     document.getElementById('login-pw').value='';
     toast('🎉 가입이 완료되었습니다!');
-    enterStudent(pendingName);
-    pendingName='';pendingPw='';
-  }).catch(()=>toast('등록에 실패했습니다. 다시 시도해주세요.',true));
+    enterStudent(pendingName,pendingCode);
+    pendingName='';pendingPw='';pendingCode='';
+  }).catch(()=>toast('등록에 실패했습니다.',true));
 }
 
-function enterStudent(name){
+function enterStudent(name,code){
   studentName=name;
   document.getElementById('student-avatar').textContent=name[0];
   document.getElementById('student-name-display').textContent=name;
   showPage('page-student');initStudentUI();renderPublicPosts();
   toast('환영합니다, '+name+'님!');
 }
-function studentLogout(){studentName='';showPage('page-role')}
+
+function studentLogout(){
+  studentName='';currentProfId='';
+  if(postsListener&&postsRef){postsRef.off('value',postsListener);postsListener=null}
+  if(studentsListener&&studentsRef){studentsRef.off('value',studentsListener);studentsListener=null}
+  posts=[];studentAccounts={};
+  showPage('page-role');
+}
 
 // ═══════ STUDENT LIST (Teacher) ═══════
-function deleteStudent(key){studentsRef.child(key).remove()}
+function deleteStudent(key){if(studentsRef)studentsRef.child(key).remove()}
 function deleteAllStudents(){
   const c=Object.keys(studentAccounts).length;
-  if(c&&confirm('가입한 '+c+'명의 학생을 모두 삭제하시겠습니까?\n(학생들이 다시 로그인하면 재등록됩니다)'))studentsRef.remove();
+  if(c&&studentsRef&&confirm('가입한 '+c+'명의 학생을 모두 삭제하시겠습니까?'))studentsRef.remove();
 }
 
 function renderStudentList(){
@@ -387,8 +476,7 @@ function renderStudentList(){
   list.innerHTML=entries.map(([key,s],i)=>{
     const pc=posts.filter(p=>p.name===s.name).length;
     return`<div class="student-row slide-in" style="animation-delay:${i*.03}s;" onclick="showProfile('${key}')">
-      <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#6c5ce733,#00b89433);
-        display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:var(--accent-light);">${esc(s.name[0])}</div>
+      <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#6c5ce733,#00b89433);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:var(--accent-light);">${esc(s.name[0])}</div>
       <div style="flex:1;">
         <div style="font-size:14px;font-weight:600;">${esc(s.name)}</div>
         <div style="display:flex;gap:8px;margin-top:2px;flex-wrap:wrap;">
@@ -410,13 +498,10 @@ function showProfile(key){
   const s=studentAccounts[key];if(!s)return;
   const pc=posts.filter(p=>p.name===s.name).length;
   const recentPosts=posts.filter(p=>p.name===s.name).slice(0,5);
-
   let h=`<div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
-    <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#6c5ce744,#00b89433);
-      display:flex;align-items:center;justify-content:center;font-weight:900;font-size:22px;color:var(--accent-light);">${esc(s.name[0])}</div>
+    <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#6c5ce744,#00b89433);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:22px;color:var(--accent-light);">${esc(s.name[0])}</div>
     <div><div style="font-size:18px;font-weight:800;">${esc(s.name)}</div>
       <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">가입: ${fmt(s.joinedAt)} · 의견 ${pc}건</div></div></div>`;
-
   h+=`<div class="profile-detail">
     <div class="profile-field"><span class="label">🔢 학번</span><span class="value">${esc(s.studentId||'-')}</span></div>
     <div class="profile-field"><span class="label">🏫 학과</span><span class="value">${esc(s.department||'-')}</span></div>
@@ -425,23 +510,9 @@ function showProfile(key){
     <div class="profile-field"><span class="label">📊 학점</span><span class="value">${esc(s.gpa||'-')}</span></div>
     <div class="profile-field"><span class="label">🌐 영어점수</span><span class="value">${esc(s.englishScore||'-')}</span></div>
   </div>`;
-
-  if(s.bio){
-    h+=`<div style="margin-bottom:16px;"><div style="font-size:13px;font-weight:600;color:var(--text-sec);margin-bottom:8px;">✍️ 자기소개</div>
-      <div class="profile-bio">${esc(s.bio)}</div></div>`;
-  }
-
-  if(recentPosts.length){
-    h+=`<div><div style="font-size:13px;font-weight:600;color:var(--text-sec);margin-bottom:8px;">💬 최근 의견</div>`;
-    recentPosts.forEach(p=>{const c=getCat(p.category);
-      h+=`<div style="padding:10px 12px;background:var(--bg);border-radius:10px;margin-bottom:6px;font-size:13px;">
-        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-          <span style="color:${c.color};font-size:11px;">${c.emoji} ${c.label}</span>
-          <span style="color:var(--text-muted);font-size:11px;font-family:'Space Mono',monospace;">${fmt(p.timestamp)}</span></div>
-        <div style="line-height:1.6;white-space:pre-wrap;">${esc(p.text)}</div></div>`});
-    h+=`</div>`;
-  }
-
+  if(s.bio)h+=`<div style="margin-bottom:16px;"><div style="font-size:13px;font-weight:600;color:var(--text-sec);margin-bottom:8px;">✍️ 자기소개</div><div class="profile-bio">${esc(s.bio)}</div></div>`;
+  if(recentPosts.length){h+=`<div><div style="font-size:13px;font-weight:600;color:var(--text-sec);margin-bottom:8px;">💬 최근 의견</div>`;
+    recentPosts.forEach(p=>{const c=getCat(p.category);h+=`<div style="padding:10px 12px;background:var(--bg);border-radius:10px;margin-bottom:6px;font-size:13px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="color:${c.color};font-size:11px;">${c.emoji} ${c.label}</span><span style="color:var(--text-muted);font-size:11px;font-family:'Space Mono',monospace;">${fmt(p.timestamp)}</span></div><div style="line-height:1.6;white-space:pre-wrap;">${esc(p.text)}</div></div>`});h+=`</div>`}
   document.getElementById('profile-content').innerHTML=h;
   document.getElementById('profile-modal').classList.remove('hidden');
 }
@@ -467,7 +538,7 @@ function updateVis(){
   else{b.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> 비공개';b.style.color='#e17055';b.style.background='var(--red-dim)'}
 }
 function submitPost(){
-  const text=document.getElementById('post-text').value.trim();if(!text)return;
+  const text=document.getElementById('post-text').value.trim();if(!text||!postsRef)return;
   postsRef.push({id:Date.now().toString(),name:studentName,text,isPublic,category:selectedCat,timestamp:Date.now(),read:false,starred:false,reply:''})
     .then(()=>{document.getElementById('post-text').value='';toast('✅ 의견이 전송되었습니다!')})
     .catch(()=>toast('⚠️ 전송 실패.',true));
@@ -484,7 +555,7 @@ function renderPublicPosts(){
         <span style="font-size:12px;color:${c.color};font-weight:600;">${c.emoji} ${c.label}</span>
         <span style="font-size:11px;color:var(--text-muted);font-family:'Space Mono',monospace;">${fmt(p.timestamp)}</span></div>
       <div style="font-size:14px;line-height:1.7;white-space:pre-wrap;">${esc(p.text)}</div>
-      ${p.reply?`<div class="reply-box" style="margin-top:10px;"><span style="font-weight:600;font-size:11px;">👨‍🏫 선생님 답변</span><div style="margin-top:4px;">${esc(p.reply)}</div></div>`:''}</div>`});
+      ${p.reply?`<div class="reply-box" style="margin-top:10px;"><span style="font-weight:600;font-size:11px;">👨‍🏫 교수 답변</span><div style="margin-top:4px;">${esc(p.reply)}</div></div>`:''}</div>`});
   w.innerHTML=h;
 }
 
@@ -523,16 +594,15 @@ function renderFeed(){
   const list=document.getElementById('feed-list');if(!list)return;
   if(!filtered.length){list.innerHTML='<div style="text-align:center;padding:60px 0;color:var(--text-muted);"><div style="font-size:40px;margin-bottom:12px;">📭</div><div style="font-size:14px;">아직 의견이 없습니다</div></div>';return}
 
-  // Find student key by name for profile link
-  function getStudentKey(name){const e=Object.entries(studentAccounts).find(([k,s])=>s.name===name);return e?e[0]:null}
+  function getSK(name){const e=Object.entries(studentAccounts).find(([k,s])=>s.name===name);return e?e[0]:null}
 
   let h='';
-  filtered.forEach((p,i)=>{const c=getCat(p.category),k=p._key||'',sk=getStudentKey(p.name);
+  filtered.forEach((p,i)=>{const c=getCat(p.category),k=p._key||'',sk=getSK(p.name);
     h+=`<div class="post-card fade-up ${p.read?'':'unread'}" style="animation-delay:${i*.03}s" onclick="markRead('${k}')">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <div style="display:flex;align-items:center;gap:10px;">
           <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,${c.color}44,${c.color}22);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:${c.color};${sk?'cursor:pointer':''};" ${sk?`onclick="event.stopPropagation();showProfile('${sk}')"`:''}>${esc(p.name[0])}</div>
-          <div><div style="font-size:14px;font-weight:600;${sk?'cursor:pointer;':''}${sk?'text-decoration:underline;text-decoration-color:var(--border);text-underline-offset:3px;':''}" ${sk?`onclick="event.stopPropagation();showProfile('${sk}')"`:''}>${esc(p.name)}</div>
+          <div><div style="font-size:14px;font-weight:600;${sk?'cursor:pointer;text-decoration:underline;text-decoration-color:var(--border);text-underline-offset:3px;':''}" ${sk?`onclick="event.stopPropagation();showProfile('${sk}')"`:''}>${esc(p.name)}</div>
             <div style="display:flex;gap:8px;align-items:center;margin-top:2px;">
               <span style="font-size:11px;color:${c.color};">${c.emoji} ${c.label}</span>
               <span style="font-size:10px;padding:1px 7px;border-radius:4px;background:${p.isPublic?'var(--green-dim)':'var(--red-dim)'};color:${p.isPublic?'#00b894':'#e17055'};">${p.isPublic?'공개':'비공개'}</span></div></div></div>
@@ -552,13 +622,13 @@ function renderFeed(){
   if(replyingTo){const a=document.getElementById('reply-area-'+replyingTo);if(a){a.classList.remove('hidden');a.style.display='flex';const inp=document.getElementById('reply-input-'+replyingTo),p=posts.find(x=>x._key===replyingTo);if(inp&&p)inp.value=p.reply||'';setTimeout(()=>inp?.focus(),50)}}
 }
 
-function markRead(k){if(k){const p=posts.find(x=>x._key===k);if(p&&!p.read)postsRef.child(k).update({read:true})}}
-function toggleStar(k){const p=posts.find(x=>x._key===k);if(p)postsRef.child(k).update({starred:!p.starred})}
-function deletePost(k){if(k)postsRef.child(k).remove()}
-function markAllRead(){posts.forEach(p=>{if(!p.read&&p._key)postsRef.child(p._key).update({read:true})})}
-function clearAllPosts(){if(posts.length&&confirm('정말 전체 삭제하시겠습니까?'))postsRef.remove()}
+function markRead(k){if(k&&postsRef){const p=posts.find(x=>x._key===k);if(p&&!p.read)postsRef.child(k).update({read:true})}}
+function toggleStar(k){if(postsRef){const p=posts.find(x=>x._key===k);if(p)postsRef.child(k).update({starred:!p.starred})}}
+function deletePost(k){if(k&&postsRef)postsRef.child(k).remove()}
+function markAllRead(){if(postsRef)posts.forEach(p=>{if(!p.read&&p._key)postsRef.child(p._key).update({read:true})})}
+function clearAllPosts(){if(postsRef&&posts.length&&confirm('정말 전체 삭제하시겠습니까?'))postsRef.remove()}
 function startReply(k){replyingTo=replyingTo===k?null:k;renderFeed()}
-function sendReply(k){const inp=document.getElementById('reply-input-'+k);if(!inp||!inp.value.trim())return;postsRef.child(k).update({reply:inp.value.trim()});replyingTo=null;toast('✅ 답변이 등록되었습니다')}
+function sendReply(k){if(!postsRef)return;const inp=document.getElementById('reply-input-'+k);if(!inp||!inp.value.trim())return;postsRef.child(k).update({reply:inp.value.trim()});replyingTo=null;toast('✅ 답변이 등록되었습니다')}
 
 // ═══════ DASHBOARD ═══════
 function renderDashboard(){
