@@ -131,6 +131,12 @@
     </div>
     <div class="ig"><label>🏫 학과</label><input id="reg-dept" placeholder="예: 컴퓨터공학과"></div>
     <div class="ig-row">
+      <div class="ig"><label>📖 교과목</label><input id="reg-course" placeholder="예: 데이터베이스"></div>
+      <div class="ig"><label>🔖 분반</label>
+        <select id="reg-section"><option value="">선택</option><option value="01">01반</option><option value="02">02반</option></select>
+      </div>
+    </div>
+    <div class="ig-row">
       <div class="ig"><label>📊 학점 (GPA)</label><input id="reg-gpa" type="number" step="0.01" min="0" max="4.5" placeholder="예: 3.5"></div>
       <div class="ig"><label>🌐 영어점수</label><input id="reg-eng" placeholder="예: TOEIC 850"></div>
     </div>
@@ -309,6 +315,8 @@ function studentLogin(){
     document.getElementById('reg-sid').value='';
     document.getElementById('reg-grade').value='';
     document.getElementById('reg-dept').value='';
+    document.getElementById('reg-course').value='';
+    document.getElementById('reg-section').value='';
     document.getElementById('reg-gpa').value='';
     document.getElementById('reg-eng').value='';
     document.getElementById('reg-bio').value='';
@@ -321,6 +329,8 @@ function completeRegistration(){
   const sid=document.getElementById('reg-sid').value.trim();
   const grade=document.getElementById('reg-grade').value;
   const dept=document.getElementById('reg-dept').value.trim();
+  const course=document.getElementById('reg-course').value.trim();
+  const section=document.getElementById('reg-section').value;
   const gpa=document.getElementById('reg-gpa').value.trim();
   const eng=document.getElementById('reg-eng').value.trim();
   const bio=document.getElementById('reg-bio').value.trim();
@@ -334,6 +344,8 @@ function completeRegistration(){
     studentId:sid,
     grade:grade,
     department:dept||'',
+    course:course||'',
+    section:section||'',
     gpa:gpa||'',
     englishScore:eng||'',
     bio:bio||'',
@@ -382,7 +394,7 @@ function renderStudentList(){
         <div style="display:flex;gap:8px;margin-top:2px;flex-wrap:wrap;">
           <span style="font-size:11px;color:var(--text-muted);">학번: ${esc(s.studentId||'-')}</span>
           <span style="font-size:11px;color:var(--text-muted);">${esc(s.department||'')}</span>
-          <span style="font-size:11px;color:var(--text-muted);">${s.grade?s.grade+'학년':''}</span>
+          <span style="font-size:11px;color:var(--text-muted);">${esc(s.course||'')}${s.section?' '+s.section+'반':''}</span>
           <span style="font-size:11px;color:var(--accent-light);">의견 ${pc}건</span>
         </div>
       </div>
@@ -408,6 +420,7 @@ function showProfile(key){
   h+=`<div class="profile-detail">
     <div class="profile-field"><span class="label">🔢 학번</span><span class="value">${esc(s.studentId||'-')}</span></div>
     <div class="profile-field"><span class="label">🏫 학과</span><span class="value">${esc(s.department||'-')}</span></div>
+    <div class="profile-field"><span class="label">📖 교과목</span><span class="value">${esc(s.course||'-')}${s.section?' ('+s.section+'반)':''}</span></div>
     <div class="profile-field"><span class="label">📚 학년</span><span class="value">${s.grade?s.grade+'학년':'-'}</span></div>
     <div class="profile-field"><span class="label">📊 학점</span><span class="value">${esc(s.gpa||'-')}</span></div>
     <div class="profile-field"><span class="label">🌐 영어점수</span><span class="value">${esc(s.englishScore||'-')}</span></div>
