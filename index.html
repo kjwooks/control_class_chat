@@ -632,47 +632,44 @@ function exportExcel(){
   const allStudents=Object.entries(studentAccounts);
   if(!allStudents.length){toast('가입한 학생이 없습니다.',true);return}
 
-  const rows=[];
-  allStudents.sort((a,b)=>a[1].name.localeCompare(b[1].name,'ko'));
-
-  allStudents.forEach(([key,s])=>{
-    const myPosts=posts.filter(p=>p.name===s.name);
-    const totalPosts=myPosts.length;
-    const starredPosts=myPosts.filter(p=>p.starred).length;
-    const hasProfile=(s.studentId&&s.grade)?1:0;
-
-    // Score calculation
-    const profileScore=hasProfile?0.3:0;
-    const postScore=totalPosts*0.2;
-    const starScore=starredPosts*0.4;
-    const rawTotal=profileScore+postScore+starScore;
-    const finalScore=Math.min(rawTotal,3.0);
-
-    rows.push({
-      '이름':s.name||'',
-      '학번':s.studentId||'',
-      '학과':s.department||'',
-      '학년':s.grade?s.grade+'학년':'',
-      '교과목':s.course||'',
-      '분반':s.section?s.section+'반':'',
-      '프로필작성':hasProfile?'O':'X',
-      '프로필점수(0.3)':profileScore,
-      '총 의견수':totalPosts,
-      '의견점수(×0.2)':Math.round(postScore*100)/100,
-      '별표 의견수':starredPosts,
-      '별표점수(×0.4)':Math.round(starScore*100)/100,
-      '합산점수':Math.round(rawTotal*100)/100,
-      '최종점수(최대3점)':Math.round(finalScore*100)/100,
+  function buildRows(students){
+    const rows=[];
+    students.sort((a,b)=>a[1].name.localeCompare(b[1].name,'ko'));
+    students.forEach(([key,s])=>{
+      const myPosts=posts.filter(p=>p.name===s.name);
+      const totalPosts=myPosts.length;
+      const starredPosts=myPosts.filter(p=>p.starred).length;
+      const hasProfile=(s.studentId&&s.grade)?1:0;
+      const profileScore=hasProfile?0.3:0;
+      const postScore=totalPosts*0.2;
+      const starScore=starredPosts*0.4;
+      const rawTotal=profileScore+postScore+starScore;
+      const finalScore=Math.min(rawTotal,3.0);
+      rows.push({
+        '이름':s.name||'','학번':s.studentId||'','학과':s.department||'',
+        '학년':s.grade?s.grade+'학년':'','교과목':s.course||'','분반':s.section?s.section+'반':'',
+        '프로필작성':hasProfile?'O':'X','프로필점수(0.3)':profileScore,
+        '총 의견수':totalPosts,'의견점수(×0.2)':Math.round(postScore*100)/100,
+        '별표 의견수':starredPosts,'별표점수(×0.4)':Math.round(starScore*100)/100,
+        '합산점수':Math.round(rawTotal*100)/100,'최종점수(최대3점)':Math.round(finalScore*100)/100,
+      });
     });
-  });
+    return rows;
+  }
 
-  const ws=XLSX.utils.json_to_sheet(rows);
-
-  // Column widths
-  ws['!cols']=[{wch:10},{wch:12},{wch:14},{wch:8},{wch:12},{wch:8},{wch:10},{wch:14},{wch:10},{wch:14},{wch:12},{wch:14},{wch:10},{wch:18}];
-
+  const colWidths=[{wch:10},{wch:12},{wch:14},{wch:8},{wch:12},{wch:8},{wch:10},{wch:14},{wch:10},{wch:14},{wch:12},{wch:14},{wch:10},{wch:18}];
   const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,'학생성적');
+
+  // Split by section
+  const sec01=allStudents.filter(([k,s])=>s.section==='01');
+  const sec02=allStudents.filter(([k,s])=>s.section==='02');
+  const secEtc=allStudents.filter(([k,s])=>s.section!=='01'&&s.section!=='02');
+
+  if(sec01.length){const ws=XLSX.utils.json_to_sheet(buildRows(sec01));ws['!cols']=colWidths;XLSX.utils.book_append_sheet(wb,ws,'01반');}
+  if(sec02.length){const ws=XLSX.utils.json_to_sheet(buildRows(sec02));ws['!cols']=colWidths;XLSX.utils.book_append_sheet(wb,ws,'02반');}
+  if(secEtc.length){const ws=XLSX.utils.json_to_sheet(buildRows(secEtc));ws['!cols']=colWidths;XLSX.utils.book_append_sheet(wb,ws,'기타');}
+
+  if(!wb.SheetNames.length){toast('데이터가 없습니다.',true);return}
 
   const now=new Date();
   const dateStr=`${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
