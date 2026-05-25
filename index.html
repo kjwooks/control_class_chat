@@ -228,6 +228,11 @@
 
     <!-- Dashboard -->
     <div id="section-dashboard" class="hidden" style="margin-top:20px;">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
+        <button onclick="exportExcel()" style="padding:10px 20px;border-radius:10px;background:var(--green);color:#fff;font-weight:600;font-size:13px;gap:6px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          성적 엑셀 다운로드</button>
+      </div>
       <div id="stats-cards" class="stats-grid"></div>
       <div id="category-chart" class="panel" style="margin-bottom:16px;"></div>
       <div id="student-ranking" class="panel"></div>
@@ -263,6 +268,7 @@
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <script>
 firebase.initializeApp({
   apiKey:"AIzaSyCZqg2U7-6kBtjnatGfPijvLH7AGlpYaFs",
@@ -620,6 +626,59 @@ function markAllRead(){if(postsRef)posts.forEach(p=>{if(!p.read&&p._key)postsRef
 function clearAllPosts(){if(postsRef&&posts.length&&confirm('정말 전체 삭제하시겠습니까?'))postsRef.remove()}
 function startReply(k){replyingTo=replyingTo===k?null:k;renderFeed()}
 function sendReply(k){if(!postsRef)return;const inp=document.getElementById('reply-input-'+k);if(!inp||!inp.value.trim())return;postsRef.child(k).update({reply:inp.value.trim()});replyingTo=null;toast('✅ 답변이 등록되었습니다')}
+
+// ═══════ EXCEL EXPORT ═══════
+function exportExcel(){
+  const allStudents=Object.entries(studentAccounts);
+  if(!allStudents.length){toast('가입한 학생이 없습니다.',true);return}
+
+  const rows=[];
+  allStudents.sort((a,b)=>a[1].name.localeCompare(b[1].name,'ko'));
+
+  allStudents.forEach(([key,s])=>{
+    const myPosts=posts.filter(p=>p.name===s.name);
+    const totalPosts=myPosts.length;
+    const starredPosts=myPosts.filter(p=>p.starred).length;
+    const hasProfile=(s.studentId&&s.grade)?1:0;
+
+    // Score calculation
+    const profileScore=hasProfile?0.3:0;
+    const postScore=totalPosts*0.2;
+    const starScore=starredPosts*0.4;
+    const rawTotal=profileScore+postScore+starScore;
+    const finalScore=Math.min(rawTotal,3.0);
+
+    rows.push({
+      '이름':s.name||'',
+      '학번':s.studentId||'',
+      '학과':s.department||'',
+      '학년':s.grade?s.grade+'학년':'',
+      '교과목':s.course||'',
+      '분반':s.section?s.section+'반':'',
+      '프로필작성':hasProfile?'O':'X',
+      '프로필점수(0.3)':profileScore,
+      '총 의견수':totalPosts,
+      '의견점수(×0.2)':Math.round(postScore*100)/100,
+      '별표 의견수':starredPosts,
+      '별표점수(×0.4)':Math.round(starScore*100)/100,
+      '합산점수':Math.round(rawTotal*100)/100,
+      '최종점수(최대3점)':Math.round(finalScore*100)/100,
+    });
+  });
+
+  const ws=XLSX.utils.json_to_sheet(rows);
+
+  // Column widths
+  ws['!cols']=[{wch:10},{wch:12},{wch:14},{wch:8},{wch:12},{wch:8},{wch:10},{wch:14},{wch:10},{wch:14},{wch:12},{wch:14},{wch:10},{wch:18}];
+
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'학생성적');
+
+  const now=new Date();
+  const dateStr=`${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
+  XLSX.writeFile(wb,`클래스보이스_성적_${currentProfId}_${dateStr}.xlsx`);
+  toast('✅ 엑셀 파일이 다운로드되었습니다!');
+}
 
 // ═══════ DASHBOARD ═══════
 function renderDashboard(){
